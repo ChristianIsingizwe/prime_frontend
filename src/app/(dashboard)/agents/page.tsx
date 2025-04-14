@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Users, Edit, Trash2 } from "lucide-react";
-import { ResponsiveTable, Column } from "../../components/ui/responsive-table";
-import AgentFormModal from "../../components/agent-modal";
-import AgentDetailsModal from "../../components/agent-details-modal";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  ResponsiveTable,
+  type Column,
+} from "../../components/ui/responsive-table";
 import { DashboardHeader } from "../../components/ui/dashboard-header";
 import { Container } from "../../components/ui/container";
 import {
@@ -14,159 +16,88 @@ import {
   CardContent,
 } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
-
-interface Agent {
-  id: string;
-  workId: string;
-  name: string;
-  department: string;
-  avatar: string;
-  email?: string;
-  dateOfBirth?: string;
-  location?: string;
-  nationalId?: string;
-}
-
-interface AgentFormData {
-  name: string;
-  workId: string;
-  email: string;
-  dateOfBirth: string;
-  location: string;
-  nationalId: string;
-}
-
-const agents: Agent[] = [
-  {
-    id: "1",
-    workId: "EMP00123",
-    name: "Lindsey Stroud",
-    department: "Technology Department",
-    avatar: "/placeholder.svg?height=40&width=40",
-    email: "lindsey.stroud@example.com",
-    dateOfBirth: "15/05/1990",
-    location: "New York",
-    nationalId: "123-45-6789",
-  },
-  {
-    id: "2",
-    workId: "EMP09876",
-    name: "Sarah Brown",
-    department: "Technology Department",
-    avatar: "/placeholder.svg?height=40&width=40",
-    email: "sarah.brown@example.com",
-    dateOfBirth: "22/07/1988",
-    location: "San Francisco",
-    nationalId: "234-56-7890",
-  },
-  {
-    id: "3",
-    workId: "WRK45782",
-    name: "Michael Owen",
-    department: "Technology Department",
-    avatar: "/placeholder.svg?height=40&width=40",
-    email: "michael.owen@example.com",
-    dateOfBirth: "10/03/1992",
-    location: "Chicago",
-    nationalId: "345-67-8901",
-  },
-  {
-    id: "4",
-    workId: "STAFF00567",
-    name: "Mary Jane",
-    department: "Technology Department",
-    avatar: "/placeholder.svg?height=40&width=40",
-    email: "mary.jane@example.com",
-    dateOfBirth: "05/11/1995",
-    location: "Boston",
-    nationalId: "456-78-9012",
-  },
-  {
-    id: "5",
-    workId: "HR202301",
-    name: "Peter Dodle",
-    department: "Technology Department",
-    avatar: "/placeholder.svg?height=40&width=40",
-    email: "peter.dodle@example.com",
-    dateOfBirth: "18/09/1987",
-    location: "Seattle",
-    nationalId: "567-89-0123",
-  },
-];
+import AgentFormModal from "../../components/agent-modal";
+import { DeleteConfirmationModal } from "../../components/delete-confirmation-modal";
+import {
+  getAgents,
+  createAgent,
+  deleteAgent,
+  type Agent,
+} from "../../lib/api/agents";
+import { useAgentStore } from "../../stores/agentStore";
+import React from "react";
 
 export default function AgentsPage() {
-  const [isFormModalOpen, setIsFormModalOpen] = useState<boolean>(false);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState<boolean>(false);
-  const [contentRef, setContentRef] = useState<HTMLDivElement | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const queryClient = useQueryClient();
+  const { setAgents, removeAgent } = useAgentStore();
 
-  const handleOpenFormModal = (): void => {
-    setIsFormModalOpen(true);
-  };
+  const { data: agents = [], isLoading } = useQuery<Agent[]>({
+    queryKey: ["agents"],
+    queryFn: getAgents,
+  });
 
-  const handleCloseFormModal = (): void => {
-    setIsFormModalOpen(false);
-  };
-
-  const handleFormSubmit = (formData: AgentFormData): void => {
-    console.log("Form submitted:", formData);
-    setIsFormModalOpen(false);
-  };
-
-  const handleOpenDetailsModal = (agent: Agent): void => {
-    setSelectedAgent(agent);
-    setIsDetailsModalOpen(true);
-  };
-
-  const handleCloseDetailsModal = (): void => {
-    setIsDetailsModalOpen(false);
-    setSelectedAgent(null);
-  };
-
-  const mainContentRef = (node: HTMLDivElement) => {
-    if (node !== null) {
-      setContentRef(node);
+  // Update store when data is fetched
+  React.useEffect(() => {
+    if (agents.length > 0) {
+      setAgents(agents);
     }
-  };
+  }, [agents, setAgents]);
 
-  const handleSearch = (value: string) => {
-    setSearchQuery(value);
-  };
+  const createAgentMutation = useMutation({
+    mutationFn: createAgent,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["agents"] });
+      setIsFormModalOpen(false);
+    },
+  });
 
-  // Filter agents based on search query
+  const deleteAgentMutation = useMutation({
+    mutationFn: deleteAgent,
+    onMutate: async (id) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["agents"] });
+
+      // Snapshot the previous value
+      const previousAgents = queryClient.getQueryData<Agent[]>(["agents"]);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData<Agent[]>(
+        ["agents"],
+        (old) => old?.filter((agent) => agent.id !== id) ?? []
+      );
+
+      // Also update the store
+      removeAgent(id);
+
+      return { previousAgents };
+    },
+    onError: (_, __, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousAgents) {
+        queryClient.setQueryData(["agents"], context.previousAgents);
+        // Also update the store with the previous data
+        setAgents(context.previousAgents);
+      }
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure data is in sync
+      queryClient.invalidateQueries({ queryKey: ["agents"] });
+      setIsDeleteModalOpen(false);
+      setSelectedAgent(null);
+    },
+  });
+
   const filteredAgents = agents.filter(
     (agent) =>
       agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agent.workId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      agent.department.toLowerCase().includes(searchQuery.toLowerCase())
+      agent.workId.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  useEffect(() => {
-    if (contentRef) {
-      const isAnyModalOpen = isFormModalOpen || isDetailsModalOpen;
-
-      if (isAnyModalOpen) {
-        contentRef.classList.add(
-          "blur-[2px]",
-          "opacity-60",
-          "transition-all",
-          "duration-300",
-          "pointer-events-none"
-        );
-      } else {
-        contentRef.classList.remove(
-          "blur-[2px]",
-          "opacity-60",
-          "transition-all",
-          "duration-300",
-          "pointer-events-none"
-        );
-      }
-    }
-  }, [isFormModalOpen, isDetailsModalOpen, contentRef]);
-
-  const agentColumns: Column<Agent>[] = [
+  const columns: Column<Agent>[] = [
     {
       header: "Work ID",
       key: "workId",
@@ -174,36 +105,29 @@ export default function AgentsPage() {
     },
     {
       header: "Agent Name",
-      key: "agentName",
-      render: (agent: Agent) => (
-        <div
-          className="flex items-center cursor-pointer hover:text-blue-600"
-          onClick={() => handleOpenDetailsModal(agent)}
-        >
-          <img
-            src={agent.avatar || "/placeholder.svg"}
-            alt={agent.name}
-            className="h-6 w-6 rounded-full mr-2"
-          />
-          {agent.name}
-        </div>
-      ),
+      key: "name",
+      accessor: "name",
     },
     {
-      header: "Performance",
-      key: "department",
-      accessor: "department",
-      hideOnMobile: true,
+      header: "Email",
+      key: "email",
+      accessor: "email",
     },
     {
       header: "Action",
       key: "action",
-      render: (agent: Agent) => (
+      render: (agent) => (
         <div className="flex space-x-2">
-          <button className="text-blue-600 hover:text-blue-800">
+          <button
+            className="text-blue-600 hover:text-blue-800"
+            onClick={() => handleEdit(agent)}
+          >
             <Edit className="h-4 w-4" />
           </button>
-          <button className="text-red-600 hover:text-red-800">
+          <button
+            className="text-red-600 hover:text-red-800"
+            onClick={() => handleDelete(agent)}
+          >
             <Trash2 className="h-4 w-4" />
           </button>
         </div>
@@ -211,48 +135,85 @@ export default function AgentsPage() {
     },
   ];
 
+  const handleSearch = (value: string) => {
+    setSearchQuery(value);
+  };
+
+  const handleEdit = (agent: Agent) => {
+    // Implement edit functionality
+    console.log("Edit agent:", agent);
+  };
+
+  const handleDelete = (agent: Agent) => {
+    setSelectedAgent(agent);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedAgent) {
+      deleteAgentMutation.mutate(selectedAgent.id);
+    }
+  };
+
+  const handleOpenFormModal = () => {
+    setIsFormModalOpen(true);
+  };
+
+  const handleCloseFormModal = () => {
+    setIsFormModalOpen(false);
+  };
+
+  const handleFormSubmit = (data: any) => {
+    createAgentMutation.mutate(data);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <DashboardHeader
-        title="Manage Agents"
+        title="Prime insurance agents"
         icon={<Users className="h-5 w-5" />}
         onSearchChange={handleSearch}
       />
 
-      <div ref={mainContentRef} className="transition-all duration-300">
-        <Container className="py-6">
-          <Card>
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-              <CardTitle>All Agents</CardTitle>
-              <Button onClick={handleOpenFormModal}>Add New Agent</Button>
-            </CardHeader>
-            <CardContent>
+      <Container className="py-6">
+        <Card>
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+            <CardTitle>All Agents</CardTitle>
+            <Button onClick={handleOpenFormModal}>Add Agent</Button>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+              </div>
+            ) : (
               <ResponsiveTable
                 data={filteredAgents}
-                columns={agentColumns}
+                columns={columns}
                 enableRowSelection={true}
-                defaultRowsPerPage={10}
+                defaultRowsPerPage={5}
               />
-            </CardContent>
-          </Card>
-        </Container>
+            )}
+          </CardContent>
+        </Card>
+      </Container>
 
-        {isFormModalOpen && (
-          <AgentFormModal
-            isOpen={isFormModalOpen}
-            onClose={handleCloseFormModal}
-            onSubmit={handleFormSubmit}
-          />
-        )}
+      <AgentFormModal
+        isOpen={isFormModalOpen}
+        onClose={handleCloseFormModal}
+        onSubmit={handleFormSubmit}
+      />
 
-        {isDetailsModalOpen && selectedAgent && (
-          <AgentDetailsModal
-            isOpen={isDetailsModalOpen}
-            onClose={handleCloseDetailsModal}
-            agent={selectedAgent}
-          />
-        )}
-      </div>
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedAgent(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Agent"
+        message={`Are you sure you want to delete ${selectedAgent?.name}? This action cannot be undone.`}
+      />
     </div>
   );
 }

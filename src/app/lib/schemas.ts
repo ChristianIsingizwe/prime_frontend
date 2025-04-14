@@ -28,12 +28,12 @@ export const passwordSetupSchema = z
   });
 
 export const agentFormSchema = z.object({
-  name: z.string().nonempty("Name is required"),
-  workId: z.string().nonempty("Work ID is required"),
+  firstName: z.string().nonempty("First name is required"),
+  lastName: z.string().nonempty("Last name is required"),
   email: emailSchema,
-  dateOfBirth: z.string().nonempty("Date of birth is required"),
-  location: z.string().nonempty("Location is required"),
+  workId: z.string().nonempty("Work ID is required"),
   nationalId: z.string().nonempty("National ID is required"),
+  phoneNumber: z.string().nonempty("Phone number is required"),
 });
 
 export const managerFormSchema = z.object({
