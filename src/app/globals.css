@@ -1,26 +1,141 @@
+/* globals.css */
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Base sizing */
+  --radius: 0.5rem;
+
+  /* Colors */
+  --border: 220, 14%, 75%;
+  --input: 220, 14%, 75%;
+  --ring: 220, 14%, 75%;
+  --background: 0, 0%, 100%;
+  --foreground: 222, 47%, 11%;
+
+  /* Primary */
+  --primary: 240, 100%, 50%;
+  --primary-foreground: 0, 0%, 100%;
+
+  /* Secondary */
+  --secondary: 300, 100%, 50%;
+  --secondary-foreground: 0, 0%, 100%;
+
+  /* Muted */
+  --muted: 210, 10%, 95%;
+  --muted-foreground: 210, 10%, 30%;
+
+  /* Accent */
+  --accent: 340, 82%, 52%;
+  --accent-foreground: 0, 0%, 100%;
+
+  /* Destructive */
+  --destructive: 0, 100%, 50%;
+  --destructive-foreground: 0, 0%, 100%;
+
+  /* Popover */
+  --popover: 0, 0%, 100%;
+  --popover-foreground: 222, 47%, 11%;
+
+  /* Card */
+  --card: 0, 0%, 100%;
+  --card-foreground: 222, 47%, 11%;
+
+  /* Chart colors */
+  --chart-1: 200, 70%, 50%;
+  --chart-2: 210, 70%, 50%;
+  --chart-3: 220, 70%, 50%;
+  --chart-4: 230, 70%, 50%;
+  --chart-5: 240, 70%, 50%;
+
+  /* Sidebar colors */
+  --sidebar-background: 220, 14%, 10%;
+  --sidebar-foreground: 220, 14%, 90%;
+  --sidebar-primary: 240, 100%, 50%;
+  --sidebar-primary-foreground: 0, 0%, 100%;
+  --sidebar-accent: 300, 100%, 50%;
+  --sidebar-accent-foreground: 0, 0%, 100%;
+  --sidebar-border: 220, 14%, 75%;
+  --sidebar-ring: 220, 14%, 75%;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Dark mode overrides – using the "class" strategy */
+.dark {
+  --background: 222, 47%, 11%;
+  --foreground: 0, 0%, 100%;
+  /* Override additional variables as needed for dark mode */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* --------------------------------------------------------
+   Base Styles & Custom Utilities
+   -------------------------------------------------------- */
+@layer base {
+  /* Container settings (mimicking your previous config):
+     centered with 2rem padding and a max-width for 2xl screens */
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+  @media (min-width: 1400px) {
+    .container {
+      max-width: 1400px;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  /* Border radius utilities */
+  .rounded-lg {
+    border-radius: var(--radius);
+  }
+  .rounded-md {
+    border-radius: calc(var(--radius) - 2px);
+  }
+  .rounded-sm {
+    border-radius: calc(var(--radius) - 4px);
+  }
+
+  /* Custom text wrapping utility (using experimental CSS property) */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Utility for setting the default border color */
+  .border-default {
+    border-color: hsl(var(--border));
+  }
+
+  /* Add custom animations */
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
 }
