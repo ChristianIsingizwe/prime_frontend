@@ -8,13 +8,14 @@ import { Input } from "../../components/ui/input";
 import { DashboardHeader } from "../../components/ui/dashboard-header";
 import { useProfileUpload } from "../../lib/hooks/useProfileUpload";
 import { RemoveProfileModal } from "../../components/remove-profile-modal";
+import { useProfileData } from "../../lib/hooks/useProfileData";
 
 export default function SettingsPage() {
   const [isPasswordModalOpen] = useState(false);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
-  const [profilePicture, setProfilePicture] = useState("/default-avatar.png");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadProfilePicture, isUploading } = useProfileUpload();
+  const { profileData, isLoading } = useProfileData();
 
   const handleFileSelect = () => {
     fileInputRef.current?.click();
@@ -26,14 +27,40 @@ export default function SettingsPage() {
 
     const imageUrl = await uploadProfilePicture(file);
     if (imageUrl) {
-      setProfilePicture(imageUrl);
+      // The profile data will be automatically updated on the next render
+      // since the profileImageUrl will be fetched again
     }
   };
 
   const handleRemoveProfilePicture = () => {
-    setProfilePicture("/default-avatar.png");
+    // The profile data will be automatically updated on the next render
+    // since the profileImageUrl will be fetched again
     setIsRemoveModalOpen(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <DashboardHeader
+          title="Settings"
+          icon={<Settings className="h-6 w-6" />}
+        />
+        <div className="max-w-4xl mx-auto p-6">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+            <div className="flex flex-col md:flex-row items-start gap-6">
+              <div className="w-32 h-32 rounded-full bg-gray-200"></div>
+              <div className="space-y-4">
+                <div className="h-6 bg-gray-200 rounded w-48"></div>
+                <div className="h-4 bg-gray-200 rounded w-32"></div>
+                <div className="h-4 bg-gray-200 rounded w-24"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -55,7 +82,7 @@ export default function SettingsPage() {
               <div className="relative">
                 <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100">
                   <Image
-                    src={profilePicture}
+                    src={profileData?.profileImageUrl || "/default-avatar.png"}
                     alt="Profile picture"
                     width={128}
                     height={128}
@@ -64,9 +91,13 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="flex flex-col">
-                <h3 className="text-lg font-medium">Ange Kevine Uwayo</h3>
+                <h3 className="text-lg font-medium">
+                  {profileData?.name || ""}
+                </h3>
                 <p className="text-gray-600 mb-1">Prime Insurance</p>
-                <p className="text-gray-600 mb-4">Manager</p>
+                <p className="text-gray-600 mb-4">
+                  {profileData?.role.name.replace("ROLE_", "") || ""}
+                </p>
                 <div className="flex gap-4">
                   <input
                     type="file"
@@ -105,7 +136,7 @@ export default function SettingsPage() {
                 </label>
                 <Input
                   type="text"
-                  value="Irene"
+                  value={profileData?.firstName || ""}
                   className="w-full bg-gray-50 border-gray-200"
                   readOnly
                 />
@@ -116,7 +147,7 @@ export default function SettingsPage() {
                 </label>
                 <Input
                   type="text"
-                  value="Kagabo"
+                  value={profileData?.lastName || ""}
                   className="w-full bg-gray-50 border-gray-200"
                   readOnly
                 />
@@ -127,7 +158,7 @@ export default function SettingsPage() {
                 </label>
                 <Input
                   type="email"
-                  value="kagabo.irene@primelife.rw"
+                  value={profileData?.email || ""}
                   className="w-full bg-gray-50 border-gray-200"
                   readOnly
                 />
@@ -138,7 +169,7 @@ export default function SettingsPage() {
                 </label>
                 <Input
                   type="tel"
-                  value="+250 789 123 456"
+                  value={profileData?.phoneNumber || ""}
                   className="w-full bg-gray-50 border-gray-200"
                   readOnly
                 />
@@ -149,18 +180,18 @@ export default function SettingsPage() {
                 </label>
                 <Input
                   type="text"
-                  value="123-456-789"
+                  value={profileData?.nationalId || ""}
                   className="w-full bg-gray-50 border-gray-200"
                   readOnly
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Province
+                  Region
                 </label>
                 <Input
                   type="text"
-                  value="Kigali"
+                  value={profileData?.region || ""}
                   className="w-full bg-gray-50 border-gray-200"
                   readOnly
                 />
