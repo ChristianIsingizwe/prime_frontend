@@ -18,9 +18,6 @@ export default function NotFound() {
           <p className="text-gray-600 mb-6">
             The page you're looking for doesn't exist or has been moved.
           </p>
-          <Link href="/home">
-            <Button>Go back home</Button>
-          </Link>
         </div>
       </Container>
     </div>

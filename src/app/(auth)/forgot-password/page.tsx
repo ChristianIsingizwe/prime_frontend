@@ -2,8 +2,8 @@
 
 import React from "react";
 import Image from "next/image";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
 
 export default function ForgotPasswordPage() {
   const handleSubmit = (e: React.FormEvent) => {
@@ -60,7 +60,7 @@ export default function ForgotPasswordPage() {
       <div className="hidden lg:block lg:w-1/2">
         <div className="h-full w-full relative">
           <Image
-            src="/forgot-password.jpg"
+            src="/loginImage.png"
             alt="Father and daughter smiling"
             fill
             style={{ objectFit: "cover" }}

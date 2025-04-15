@@ -27,6 +27,10 @@ import {
 } from "../../components/ui/card";
 import { Container } from "../../components/ui/container";
 import { Grid, GridItem } from "../../components/ui/grid";
+import { useQuery } from "@tanstack/react-query";
+import { getDashboardData } from "../../lib/apiUsers/performance";
+import { useDashboardStore } from "../../stores/dashboardStore";
+import { useEffect } from "react";
 
 interface Agent {
   id: string;
@@ -38,21 +42,25 @@ interface Agent {
 }
 
 export default function DashboardPage() {
-  const weeklyData = [
-    { day: "M", clients: 0 },
-    { day: "T", clients: 0 },
-    { day: "W", clients: 0 },
-    { day: "T", clients: 3 },
-    { day: "F", clients: 0 },
-    { day: "S", clients: 0 },
-    { day: "S", clients: 0 },
-  ];
+  const { weeklyData, performanceData, setDashboardData, clearDashboardData } =
+    useDashboardStore();
 
-  const performanceData = [
-    { name: "Active", value: 0, color: "#4CAF50" },
-    { name: "Not Started", value: 100, color: "#F44336" },
-    { name: "Started but no clients", value: 0, color: "#FFC107" },
-  ];
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["dashboardData"],
+    queryFn: getDashboardData,
+    retry: 1,
+  });
+
+  useEffect(() => {
+    if (data) {
+      setDashboardData({
+        weeklyData: data.weeklyData,
+        performanceData: data.performanceData,
+      });
+    } else if (isError) {
+      clearDashboardData();
+    }
+  }, [data, isError, setDashboardData, clearDashboardData]);
 
   const agents: Agent[] = [
     {
@@ -118,6 +126,28 @@ export default function DashboardPage() {
     },
   ];
 
+  const chartWeeklyData =
+    isLoading || isError
+      ? [
+          { day: "M", clients: 0 },
+          { day: "T", clients: 0 },
+          { day: "W", clients: 0 },
+          { day: "T", clients: 0 },
+          { day: "F", clients: 0 },
+          { day: "S", clients: 0 },
+          { day: "S", clients: 0 },
+        ]
+      : weeklyData;
+
+  const chartPerformanceData =
+    isLoading || isError
+      ? [
+          { name: "Active", value: 0, color: "#4CAF50" },
+          { name: "Not Started", value: 0, color: "#F44336" },
+          { name: "Started but no clients", value: 0, color: "#FFC107" },
+        ]
+      : performanceData;
+
   return (
     <div className="min-h-screen bg-gray-100">
       <DashboardHeader
@@ -141,7 +171,7 @@ export default function DashboardPage() {
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
-                      data={weeklyData}
+                      data={chartWeeklyData}
                       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
@@ -175,7 +205,7 @@ export default function DashboardPage() {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={performanceData}
+                        data={chartPerformanceData}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
@@ -183,7 +213,7 @@ export default function DashboardPage() {
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        {performanceData.map((entry, index) => (
+                        {chartPerformanceData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
@@ -193,7 +223,7 @@ export default function DashboardPage() {
                 </div>
 
                 <Grid cols={3} gap="sm" className="mt-4">
-                  {performanceData.map((data, index) => (
+                  {chartPerformanceData.map((data, index) => (
                     <GridItem
                       key={index}
                       className="flex flex-col items-center text-center"
