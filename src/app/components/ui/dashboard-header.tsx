@@ -3,13 +3,14 @@
 import { BellIcon, SearchIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, ReactNode } from "react";
 import { cn } from "../../lib/utils";
 import { Input } from "./input";
 
-interface DashboardHeaderProps {
+export interface DashboardHeaderProps {
   title: string;
-  icon?: React.ReactNode;
+  subtitle?: string;
+  icon?: ReactNode;
   userName?: string;
   userAvatar?: string;
   onSearchChange?: (value: string) => void;
@@ -17,6 +18,7 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({
   title,
+  subtitle,
   icon,
   userName = "User",
   userAvatar = "/placeholder.svg?height=40&width=40",
@@ -32,8 +34,9 @@ export function DashboardHeader({
     <header className="bg-white p-4 shadow-sm flex flex-wrap justify-between items-center">
       <div className="flex items-center gap-2">
         {icon}
-        <h1 className="text-xl font-bold">{title}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
       </div>
+      {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
 
       {/* Search bar - hidden on mobile unless expanded */}
       <div
