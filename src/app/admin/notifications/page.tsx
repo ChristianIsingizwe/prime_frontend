@@ -15,7 +15,8 @@ export default function NotificationsPage() {
     senderName: string;
     sendTime: string;
   } | null>(null);
-  const { notifications, isLoading, markAsRead } = useNotifications();
+  const { notifications, isLoading, markAsRead, isMarkAsReadSuccess } =
+    useNotifications();
 
   const handleNotificationClick = (notification: {
     id: number;
@@ -106,6 +107,7 @@ export default function NotificationsPage() {
           onClose={handleCloseModal}
           notification={selectedNotification}
           onMarkAsRead={markAsRead}
+          isMarkAsReadSuccess={isMarkAsReadSuccess}
         />
       )}
     </>

@@ -46,16 +46,12 @@ export function useNotifications() {
       }
       return response.ok;
     },
-    onSuccess: (success, notificationId) => {
-      if (success) {
-        // Only invalidate the query if the mark as read was successful
-        queryClient.invalidateQueries({ queryKey: ["notifications"] });
-        toast.success("Notification marked as read");
-      }
-    },
     onError: (error) => {
       toast.error("Failed to mark notification as read. Please try again.");
       console.error("Error marking notification as read:", error);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
 
@@ -66,5 +62,6 @@ export function useNotifications() {
     unreadCount: data?.unreadCount || 0,
     isLoading,
     markAsRead: markAsReadMutation.mutate,
+    isMarkAsReadSuccess: markAsReadMutation.isSuccess,
   };
 }

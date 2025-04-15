@@ -16,6 +16,7 @@ interface NotificationDetailsModalProps {
     sendTime: string;
   };
   onMarkAsRead: (id: number) => void;
+  isMarkAsReadSuccess: boolean;
 }
 
 export function NotificationDetailsModal({
@@ -23,27 +24,24 @@ export function NotificationDetailsModal({
   onClose,
   notification,
   onMarkAsRead,
+  isMarkAsReadSuccess,
 }: NotificationDetailsModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      onMarkAsRead(notification.id);
     }
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [isOpen]);
+  }, [isOpen, notification.id, onMarkAsRead]);
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
       onClose();
     }
-  };
-
-  const handleClose = () => {
-    onMarkAsRead(notification.id);
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -78,7 +76,7 @@ export function NotificationDetailsModal({
           <Button
             variant="primary"
             className="bg-[#093753] hover:bg-[#0f2a43] text-white"
-            onClick={handleClose}
+            onClick={onClose}
           >
             Close
           </Button>
