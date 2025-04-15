@@ -1,17 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Bell, BarChart2 } from "lucide-react";
 import { GenericTable, type Column } from "../../components/agents-table";
+import { toast } from "react-hot-toast";
 import Image from "next/image";
 
 interface Agent {
-  id: string;
   workId: string;
-  name: string;
-  avatar: string;
-  sector: string;
-  totalClients: number;
+  agentName: string;
+  sectorsWorkedIn: string[];
+  totalClientsEngaged: number;
+}
+
+interface ApiResponse {
+  agentReports: {
+    workId: string;
+    agentName: string;
+    sectorsWorkedIn: string[];
+    totalClientsEngaged: number;
+    [key: string]: any;
+  }[];
 }
 
 export default function PerformancePage() {
@@ -19,55 +28,49 @@ export default function PerformancePage() {
     "Daily"
   );
   const [filterValue, setFilterValue] = useState("");
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const agents: Agent[] = [
-    {
-      id: "1",
-      workId: "EMP00123",
-      name: "Lindsey Stroud",
-      avatar: "/placeholder.svg?height=32&width=32",
-      sector: "Technology Department",
-      totalClients: 120,
-    },
-    {
-      id: "2",
-      workId: "EMP05876",
-      name: "Sarah brown",
-      avatar: "/placeholder.svg?height=32&width=32",
-      sector: "Technology Department",
-      totalClients: 152,
-    },
-    {
-      id: "3",
-      workId: "WRK45782",
-      name: "Michael Owen",
-      avatar: "/placeholder.svg?height=32&width=32",
-      sector: "Technology Department",
-      totalClients: 32,
-    },
-    {
-      id: "4",
-      workId: "STAFF00567",
-      name: "Mary Jane",
-      avatar: "/placeholder.svg?height=32&width=32",
-      sector: "Technology Department",
-      totalClients: 210,
-    },
-    {
-      id: "5",
-      workId: "HR202301",
-      name: "Peter dodle",
-      avatar: "/placeholder.svg?height=32&width=32",
-      sector: "Technology Department",
-      totalClients: 230,
-    },
-  ];
+  const fetchAgentData = async (period: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/manager/reports?period=${period}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch agent data");
+      }
+      const data: ApiResponse = await response.json();
+
+      const mappedAgents: Agent[] = data.agentReports.map((agent) => ({
+        workId: agent.workId || "",
+        agentName: agent.agentName,
+        sectorsWorkedIn: agent.sectorsWorkedIn,
+        totalClientsEngaged: agent.totalClientsEngaged,
+      }));
+
+      setAgents(mappedAgents);
+      setTotalPages(Math.ceil(mappedAgents.length / 5));
+    } catch (error) {
+      console.error("Error fetching agent data:", error);
+      toast.error("Failed to load agent data. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const period = activeTab.toUpperCase();
+    fetchAgentData(period);
+  }, [activeTab]);
 
   const filteredAgents = agents.filter(
     (agent) =>
-      agent.name.toLowerCase().includes(filterValue.toLowerCase()) ||
+      agent.agentName.toLowerCase().includes(filterValue.toLowerCase()) ||
       agent.workId.toLowerCase().includes(filterValue.toLowerCase()) ||
-      agent.sector.toLowerCase().includes(filterValue.toLowerCase())
+      agent.sectorsWorkedIn.some((sector) =>
+        sector.toLowerCase().includes(filterValue.toLowerCase())
+      )
   );
 
   const columns: Column<Agent>[] = [
@@ -78,24 +81,31 @@ export default function PerformancePage() {
     },
     {
       header: "Agent name",
-      key: "name",
+      key: "agentName",
       render: (row) => (
         <div className="flex items-center">
-          <span>{row.name}</span>
+          <span>{row.agentName}</span>
         </div>
       ),
     },
     {
       header: "Sector",
-      key: "sector",
-      accessor: "sector",
+      key: "sectorsWorkedIn",
+      render: (row) => (
+        <span>{row.sectorsWorkedIn.join(", ") || "No sectors"}</span>
+      ),
     },
     {
       header: "Total Clients",
-      key: "totalClients",
-      render: (row) => <span>{row.totalClients} clients</span>,
+      key: "totalClientsEngaged",
+      render: (row) => <span>{row.totalClientsEngaged} clients</span>,
     },
   ];
+
+  const paginatedAgents = filteredAgents.slice(
+    (currentPage - 1) * 5,
+    currentPage * 5
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -120,9 +130,10 @@ export default function PerformancePage() {
                     ? "bg-white text-[#2A5470]"
                     : "text-gray-600"
                 }`}
-                onClick={() =>
-                  setActiveTab(tab as "Daily" | "Weekly" | "Monthly")
-                }
+                onClick={() => {
+                  setActiveTab(tab as "Daily" | "Weekly" | "Monthly");
+                  setCurrentPage(1);
+                }}
               >
                 {tab}
               </button>
@@ -142,10 +153,14 @@ export default function PerformancePage() {
 
         <div className="bg-white rounded-md shadow">
           <GenericTable
-            data={filteredAgents}
+            data={paginatedAgents}
             columns={columns}
             enableRowSelection={true}
             defaultRowsPerPage={5}
+            currentPage={currentPage}
+            totalPages={Math.ceil(filteredAgents.length / 5)}
+            onPageChange={setCurrentPage}
+            isLoading={isLoading}
           />
         </div>
       </main>

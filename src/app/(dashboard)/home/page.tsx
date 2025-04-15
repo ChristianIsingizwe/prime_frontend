@@ -39,19 +39,19 @@ interface Agent {
 
 export default function DashboardPage() {
   const weeklyData = [
-    { day: "M", clients: 80 },
-    { day: "T", clients: 150 },
-    { day: "W", clients: 40 },
-    { day: "T", clients: 200 },
-    { day: "F", clients: 120 },
-    { day: "S", clients: 120 },
-    { day: "S", clients: 130 },
+    { day: "M", clients: 0 },
+    { day: "T", clients: 0 },
+    { day: "W", clients: 0 },
+    { day: "T", clients: 3 },
+    { day: "F", clients: 0 },
+    { day: "S", clients: 0 },
+    { day: "S", clients: 0 },
   ];
 
   const performanceData = [
-    { name: "Active", value: 60, color: "#4CAF50" },
-    { name: "Not Started", value: 30, color: "#F44336" },
-    { name: "Started but no clients", value: 10, color: "#FFC107" },
+    { name: "Active", value: 0, color: "#4CAF50" },
+    { name: "Not Started", value: 100, color: "#F44336" },
+    { name: "Started but no clients", value: 0, color: "#FFC107" },
   ];
 
   const agents: Agent[] = [

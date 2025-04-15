@@ -14,6 +14,10 @@ interface GenericTableProps<T> {
   columns: Column<T>[];
   enableRowSelection?: boolean;
   defaultRowsPerPage?: number;
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
+  isLoading?: boolean;
 }
 
 export function GenericTable<T>({
@@ -21,10 +25,18 @@ export function GenericTable<T>({
   columns,
   enableRowSelection = true,
   defaultRowsPerPage = 5,
+  currentPage: externalCurrentPage,
+  totalPages: externalTotalPages,
+  onPageChange,
+  isLoading = false,
 }: GenericTableProps<T>) {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [internalCurrentPage, setInternalCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(defaultRowsPerPage);
+
+  // Use external pagination if provided, otherwise use internal state
+  const currentPage = externalCurrentPage ?? internalCurrentPage;
+  const totalPages = externalTotalPages ?? Math.ceil(data.length / rowsPerPage);
 
   const toggleSelectAll = () => {
     if (selectedRows.length === data.length) {
@@ -43,7 +55,14 @@ export function GenericTable<T>({
     }
   };
 
-  const totalPages = Math.ceil(data.length / rowsPerPage);
+  const handlePageChange = (page: number) => {
+    if (onPageChange) {
+      onPageChange(page);
+    } else {
+      setInternalCurrentPage(page);
+    }
+  };
+
   const startIndex = (currentPage - 1) * rowsPerPage;
   const paginatedData = data.slice(startIndex, startIndex + rowsPerPage);
 
@@ -73,40 +92,60 @@ export function GenericTable<T>({
             </tr>
           </thead>
           <tbody>
-            {paginatedData.map((row, index) => {
-              // Use the row id or index as key
-              const rowId = (row as any).id || index;
-              return (
-                <tr
-                  key={rowId}
-                  className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}
+            {isLoading ? (
+              <tr>
+                <td
+                  colSpan={columns.length + (enableRowSelection ? 1 : 0)}
+                  className="p-4 text-center"
                 >
-                  {enableRowSelection && (
-                    <td className="p-3">
-                      <input
-                        type="checkbox"
-                        className="h-4 w-4"
-                        checked={selectedRows.includes((row as any).id)}
-                        onChange={() => toggleSelectRow((row as any).id)}
-                      />
-                    </td>
-                  )}
-                  {columns.map((col) => (
-                    <td key={col.key} className="p-3">
-                      {col.render
-                        ? col.render(row)
-                        : col.accessor
-                        ? String(row[col.accessor])
-                        : null}
-                    </td>
-                  ))}
-                </tr>
-              );
-            })}
+                  Loading...
+                </td>
+              </tr>
+            ) : paginatedData.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={columns.length + (enableRowSelection ? 1 : 0)}
+                  className="p-4 text-center"
+                >
+                  No data available
+                </td>
+              </tr>
+            ) : (
+              paginatedData.map((row, index) => {
+                const rowId = (row as any).id || index;
+                return (
+                  <tr
+                    key={rowId}
+                    className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}
+                  >
+                    {enableRowSelection && (
+                      <td className="p-3">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4"
+                          checked={selectedRows.includes((row as any).id)}
+                          onChange={() => toggleSelectRow((row as any).id)}
+                        />
+                      </td>
+                    )}
+                    {columns.map((col) => (
+                      <td key={col.key} className="p-3">
+                        {col.render
+                          ? col.render(row)
+                          : col.accessor
+                          ? String(row[col.accessor])
+                          : null}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
-      <div className="flex justify-between items-center mt-4 text-sm">
+
+      <div className="mt-4 flex items-center justify-between">
         {enableRowSelection && (
           <div>
             {selectedRows.length} of {data.length} row(s) selected
@@ -120,7 +159,7 @@ export function GenericTable<T>({
               value={rowsPerPage}
               onChange={(e) => {
                 setRowsPerPage(Number(e.target.value));
-                setCurrentPage(1);
+                handlePageChange(1);
               }}
             >
               <option value={5}>5</option>
@@ -132,18 +171,18 @@ export function GenericTable<T>({
             Page {currentPage} of {totalPages}
           </div>
           <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-            className="border px-2 py-1 rounded"
+            onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+            disabled={currentPage === 1 || isLoading}
+            className="border px-2 py-1 rounded disabled:opacity-50"
           >
             Prev
           </button>
           <button
             onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              handlePageChange(Math.min(currentPage + 1, totalPages))
             }
-            disabled={currentPage === totalPages}
-            className="border px-2 py-1 rounded"
+            disabled={currentPage === totalPages || isLoading}
+            className="border px-2 py-1 rounded disabled:opacity-50"
           >
             Next
           </button>

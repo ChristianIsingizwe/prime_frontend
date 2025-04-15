@@ -1,15 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
 import { Settings } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { DashboardHeader } from "../../components/ui/dashboard-header";
 import { PasswordSetupModal } from "../../components/password-setup-modal";
+import { useProfileUpload } from "../../lib/hooks/useProfileUpload";
+import { RemoveProfileModal } from "../../components/remove-profile-modal";
 
 export default function SettingsPage() {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
+  const [profilePicture, setProfilePicture] = useState("/default-avatar.png");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { uploadProfilePicture, isUploading } = useProfileUpload();
 
   const handlePasswordSubmit = (data: {
     workId: string;
@@ -21,11 +27,30 @@ export default function SettingsPage() {
     setIsPasswordModalOpen(false);
   };
 
+  const handleFileSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const imageUrl = await uploadProfilePicture(file);
+    if (imageUrl) {
+      setProfilePicture(imageUrl);
+    }
+  };
+
+  const handleRemoveProfilePicture = () => {
+    setProfilePicture("/default-avatar.png");
+    setIsRemoveModalOpen(false);
+  };
+
   return (
     <>
       <div
         className={`min-h-screen bg-white ${
-          isPasswordModalOpen ? "blur-sm" : ""
+          isPasswordModalOpen || isRemoveModalOpen ? "blur-sm" : ""
         } transition-all duration-200`}
       >
         <DashboardHeader
@@ -42,7 +67,7 @@ export default function SettingsPage() {
                 <div className="relative">
                   <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-100">
                     <Image
-                      src="/default-avatar.png"
+                      src={profilePicture}
                       alt="Profile picture"
                       width={128}
                       height={128}
@@ -55,15 +80,25 @@ export default function SettingsPage() {
                   <p className="text-gray-600 mb-1">Prime Insurance</p>
                   <p className="text-gray-600 mb-4">Manager</p>
                   <div className="flex gap-4">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      accept="image/*"
+                      className="hidden"
+                    />
                     <Button
                       variant="primary"
                       className="bg-[#093753] hover:bg-[#0f2a43] text-white px-6"
+                      onClick={handleFileSelect}
+                      disabled={isUploading}
                     >
-                      Upload New Photo
+                      {isUploading ? "Uploading..." : "Upload New Photo"}
                     </Button>
                     <Button
                       variant="outline"
                       className="border-gray-300 text-gray-700 px-6"
+                      onClick={() => setIsRemoveModalOpen(true)}
                     >
                       Remove
                     </Button>
@@ -168,6 +203,12 @@ export default function SettingsPage() {
         isOpen={isPasswordModalOpen}
         onClose={() => setIsPasswordModalOpen(false)}
         onSubmit={handlePasswordSubmit}
+      />
+
+      <RemoveProfileModal
+        isOpen={isRemoveModalOpen}
+        onClose={() => setIsRemoveModalOpen(false)}
+        onConfirm={handleRemoveProfilePicture}
       />
     </>
   );
