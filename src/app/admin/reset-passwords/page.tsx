@@ -8,6 +8,8 @@ import * as z from "zod";
 import { DashboardHeader } from "../../components/ui/dashboard-header";
 import { Container } from "../../components/ui/container";
 import { Card, CardContent } from "../../components/ui/card";
+import apiClient from "../../lib/apiClient";
+import toast from "react-hot-toast";
 
 // Form validation schema
 const resetPasswordSchema = z.object({
@@ -40,21 +42,20 @@ export default function ResetPasswordPage() {
   const onSubmit = async (data: ResetPasswordForm) => {
     try {
       setResetError(null);
-      // Here you would typically make an API call to reset the password
-      // For now, we'll simulate it with localStorage
-      const userKey = `${data.email}-${data.workId}`;
-      localStorage.removeItem(`${userKey}-password`);
-      localStorage.removeItem(userKey);
-
+      // Make API call to reset password using only workId
+      await apiClient.post(`/admin/users/${data.workId}/reset-password`);
+      toast.success("Password has been reset successfully!");
       setResetSuccess(true);
       resetForm();
-
-      // Reset success message after 3 seconds
       setTimeout(() => {
         setResetSuccess(false);
       }, 3000);
-    } catch (error) {
-      setResetError("Failed to reset password. Please try again.");
+    } catch (error: any) {
+      const msg =
+        error?.response?.data?.message ||
+        "Failed to reset password. Please try again.";
+      toast.error(msg);
+      setResetError(msg);
     }
   };
 
