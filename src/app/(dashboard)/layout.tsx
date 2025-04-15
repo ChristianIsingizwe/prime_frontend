@@ -16,6 +16,7 @@ import { usePathname, useRouter } from "next/navigation";
 import LogoutModal from "../components/logout-modal";
 import { MobileSidebar } from "../components/ui/mobile-sidebar";
 import { cn } from "../lib/utils";
+import AuthGuard from "../components/auth-guard";
 
 export default function DashboardLayout({
   children,
@@ -157,7 +158,7 @@ export default function DashboardLayout({
         className="flex-1 overflow-x-hidden transition-all duration-300"
         ref={mainContentRef}
       >
-        {children}
+        <AuthGuard requiredRole="manager">{children}</AuthGuard>
       </main>
 
       <LogoutModal

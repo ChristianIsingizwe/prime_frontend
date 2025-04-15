@@ -1,14 +1,50 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import apiClient from "../../lib/apiClient";
+import toast from "react-hot-toast";
+
+const schema = z.object({
+  email: z.string().email({ message: "Invalid email address" }),
+  workId: z.string().nonempty("Work ID is required"),
+});
+
+type FormData = z.infer<typeof schema>;
 
 export default function ForgotPasswordPage() {
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Will implement the functionality later
+  const [loading, setLoading] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+    reset,
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+  });
+
+  const onSubmit = async (data: FormData) => {
+    setLoading(true);
+    try {
+      await apiClient.post("/auth/forgot-password", {
+        email: data.email,
+        workId: data.workId,
+      });
+      toast.success("If the account exists, a reset link has been sent.");
+      reset();
+    } catch (error: any) {
+      const msg =
+        error?.response?.data?.message || "Failed to send reset email.";
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -27,30 +63,41 @@ export default function ForgotPasswordPage() {
           </div>
 
           <h1 className="text-2xl font-semibold mb-2">Forgot password?</h1>
-          <p className="text-gray-600 mb-8">
-            Provide your email and employment ID
-          </p>
+          <p className="text-gray-600 mb-8">Provide your email and work ID</p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div>
               <Input
                 type="email"
                 placeholder="Email"
                 className="w-full p-3 border border-gray-300 rounded-md"
+                {...register("email")}
               />
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
             <div>
               <Input
                 type="text"
-                placeholder="Employment ID"
+                placeholder="Work ID"
                 className="w-full p-3 border border-gray-300 rounded-md"
+                {...register("workId")}
               />
+              {errors.workId && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.workId.message}
+                </p>
+              )}
             </div>
             <Button
               type="submit"
               className="w-full bg-[#093753] hover:bg-[#0f2a43] text-white py-3 rounded-md transition-colors"
+              disabled={!isValid || loading}
             >
-              Send
+              {loading ? "Sending..." : "Send"}
             </Button>
           </form>
         </div>

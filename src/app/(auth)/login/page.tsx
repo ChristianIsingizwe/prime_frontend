@@ -1,74 +1,90 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import apiClient from "../../lib/apiClient";
+import { useAuthStore } from "../../stores/authStore";
+import toast from "react-hot-toast";
+
+const strongPassword = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .regex(/[A-Z]/, "Must contain an uppercase letter")
+  .regex(/[a-z]/, "Must contain a lowercase letter")
+  .regex(/[0-9]/, "Must contain a number")
+  .regex(/[^A-Za-z0-9]/, "Must contain a special character");
 
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
-  employmentId: z.string().nonempty("Employment ID is required"),
-  password: z.string().optional(),
+  workId: z.string().nonempty("Work ID is required"),
+  password: z
+    .string()
+    .optional()
+    .refine((val) => !val || strongPassword.safeParse(val).success, {
+      message:
+        "Password must be strong (min 8 chars, upper, lower, number, special)",
+    }),
 });
 
 type FormData = z.infer<typeof schema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const setAuth = useAuthStore((s) => s.setAuth);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [hasPassword, setHasPassword] = useState<boolean>(false);
-
   const {
     register,
     handleSubmit,
     formState: { errors, isValid },
-    watch,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     mode: "onChange",
   });
 
-  // Watch for changes in email and employmentId to check if user has password
-  const email = watch("email");
-  const employmentId = watch("employmentId");
-
-  useEffect(() => {
-    // Here you would typically make an API call to check if the user has set a password
-    // For now, we'll simulate this with localStorage
-    if (email && employmentId) {
-      const userKey = `${email}-${employmentId}`;
-      const hasPassword = localStorage.getItem(userKey) === "true";
-      setHasPassword(hasPassword);
-    }
-  }, [email, employmentId]);
-
-  const onSubmit = (data: FormData) => {
-    // Here you would typically make an API call to verify credentials
-    // For now, we'll simulate this with localStorage
-    const userKey = `${data.email}-${data.employmentId}`;
-
-    if (hasPassword) {
-      if (!data.password) {
-        setLoginError("Password is required");
-        return;
+  const onSubmit = async (data: FormData) => {
+    setLoginError(null);
+    try {
+      const response = await apiClient.post("/auth/login", {
+        email: data.email,
+        workId: data.workId,
+        password: data.password || undefined,
+      });
+      const {
+        token,
+        refreshToken,
+        expiresIn,
+        workId,
+        email,
+        firstName,
+        lastName,
+        role,
+        name,
+      } = response.data;
+      setAuth({
+        token,
+        refreshToken,
+        user: { workId, email, firstName, lastName, role, name },
+        isAuthenticated: true,
+        expiresIn,
+      });
+      // Redirect based on role
+      if (role === "admin") {
+        router.push("/admin/managers");
+      } else if (role === "manager") {
+        router.push("/home");
+      } else {
+        router.push("/");
       }
-
-      const storedPassword = localStorage.getItem(`${userKey}-password`);
-      if (data.password !== storedPassword) {
-        setLoginError("Invalid password");
-        return;
-      }
-    } else {
-      // If user doesn't have password, redirect to password setup
-      router.push("/password-setup");
-      return;
+    } catch (error: any) {
+      const msg = error?.response?.data?.message || "Login failed";
+      setLoginError(msg);
+      toast.error(msg);
     }
-
-    // If all checks pass, redirect to dashboard
-    router.push("/home");
   };
 
   return (
@@ -126,43 +142,38 @@ export default function LoginPage() {
             <div>
               <input
                 type="text"
-                placeholder="Employment ID"
+                placeholder="Work ID"
                 className="w-full p-3 border border-gray-300 rounded"
-                {...register("employmentId")}
+                {...register("workId")}
               />
-              {errors.employmentId && (
+              {errors.workId && (
                 <p className="text-red-500 text-sm mt-1">
-                  {errors.employmentId.message}
+                  {errors.workId.message}
                 </p>
               )}
             </div>
 
-            {hasPassword && (
-              <>
-                <div>
-                  <input
-                    type="password"
-                    placeholder="Password"
-                    className="w-full p-3 border border-gray-300 rounded"
-                    {...register("password")}
-                  />
-                  {errors.password && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.password.message}
-                    </p>
-                  )}
-                </div>
-                <div className="text-right">
-                  <Link
-                    href="/forgot-password"
-                    className="text-[#093753] hover:text-[#0f2a43] text-sm font-medium"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-              </>
-            )}
-
+            <div>
+              <input
+                type="password"
+                placeholder="Password (optional)"
+                className="w-full p-3 border border-gray-300 rounded"
+                {...register("password")}
+              />
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+            <div className="text-right">
+              <Link
+                href="/forgot-password"
+                className="text-[#093753] hover:text-[#0f2a43] text-sm font-medium"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <button
               type="submit"
               disabled={!isValid}

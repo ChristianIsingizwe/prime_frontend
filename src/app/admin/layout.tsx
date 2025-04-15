@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import LogoutModal from "../components/logout-modal";
 import { MobileSidebar } from "../components/ui/mobile-sidebar";
 import { cn } from "../lib/utils";
+import AuthGuard from "../components/auth-guard";
 
 export default function AdminLayout({
   children,
@@ -143,7 +144,7 @@ export default function AdminLayout({
         className="flex-1 overflow-x-hidden transition-all duration-300"
         ref={mainContentRef}
       >
-        {children}
+        <AuthGuard requiredRole="admin">{children}</AuthGuard>
       </main>
 
       <LogoutModal

@@ -3,6 +3,7 @@
 import React, { useRef, useEffect } from "react";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
+import { useAuthStore } from "../stores/authStore";
 
 interface LogoutModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
   onClose,
   onConfirm,
 }) => {
+  const logout = useAuthStore((s) => s.logout);
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,6 +32,11 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
       onClose();
     }
+  };
+
+  const handleConfirm = () => {
+    logout();
+    onConfirm();
   };
 
   if (!isOpen) return null;
@@ -60,7 +67,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
           </Button>
           <Button
             variant="destructive"
-            onClick={onConfirm}
+            onClick={handleConfirm}
             className="w-full sm:w-auto order-1 sm:order-2"
           >
             Yes, Log out

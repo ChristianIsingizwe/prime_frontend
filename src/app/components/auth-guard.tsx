@@ -7,7 +7,7 @@ import { useAuthStore } from "../stores/authStore";
 
 interface AuthGuardProps {
   children: React.ReactNode;
-  requiredRole?: "manager" | "employee";
+  requiredRole?: "manager" | "employee" | "admin";
 }
 
 const ROUTE_PERMISSIONS: Record<string, string[]> = {
