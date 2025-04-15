@@ -4,6 +4,8 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "../stores/authStore";
+import Forbidden from "./forbidden";
+import Unauthenticated from "./unauthenticated";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -23,37 +25,24 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiredRole }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { token, user, isAuthenticated, logout } = useAuthStore();
+  let isAllowed = true;
 
-  useEffect(() => {
-    if (!token || !isAuthenticated) {
-      logout();
-      router.replace("/login");
-      return;
+  // No redirect here; just check auth state
+
+  // Authorization check
+  if (isAuthenticated && requiredRole) {
+    if (user?.role !== requiredRole) {
+      isAllowed = false;
     }
+  }
 
-    const userRole = user?.role || "";
+  if (!isAuthenticated) {
+    return <Unauthenticated />;
+  }
 
-    if (pathname && ROUTE_PERMISSIONS[pathname]) {
-      const allowedRoles = ROUTE_PERMISSIONS[pathname];
-
-      if (!allowedRoles.includes(userRole)) {
-        if (userRole === "manager") {
-          router.replace("/home");
-        } else {
-          router.replace("/login");
-        }
-      }
-    }
-
-    // If component requires a specific role
-    if (requiredRole) {
-      // If user doesn't have required role
-      if (requiredRole === "manager" && userRole !== "manager") {
-        // Redirect to appropriate dashboard
-        router.replace("/login");
-      }
-    }
-  }, [pathname, token, user, isAuthenticated, router, logout, requiredRole]);
+  if (!isAllowed) {
+    return <Forbidden />;
+  }
 
   return <>{children}</>;
 };
