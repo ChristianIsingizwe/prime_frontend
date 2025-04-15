@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { Agent } from "../lib/api/agents";
+import { Agent } from "../lib/apiUsers/agents";
 
 interface AgentState {
   agents: Agent[];

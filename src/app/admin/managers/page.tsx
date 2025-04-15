@@ -23,7 +23,7 @@ import {
   createManager,
   deleteManager,
   type Manager,
-} from "../../lib/api/managers";
+} from "../../lib/apiUsers/managers";
 import { useManagerStore } from "../../stores/managerStore";
 import React from "react";
 

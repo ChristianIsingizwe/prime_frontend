@@ -23,7 +23,7 @@ import {
   createAgent,
   deleteAgent,
   type Agent,
-} from "../../lib/api/agents";
+} from "../../lib/apiUsers/agents";
 import { useAgentStore } from "../../stores/agentStore";
 import React from "react";
 
@@ -140,7 +140,7 @@ export default function AgentsPage() {
   };
 
   const handleEdit = (agent: Agent) => {
-    // I will implement edit functionality later  
+    // I will implement edit functionality later
     console.log("Edit agent:", agent);
   };
 
