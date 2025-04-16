@@ -6,15 +6,18 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { passwordSetupSchema } from "../lib/schemas";
-import type { z } from "zod";
+import { passwordSchema } from "../lib/schemas";
+import { z } from "zod";
 
-type FormData = z.infer<typeof passwordSetupSchema>;
+type FormData = {
+  password: string;
+  confirmPassword: string;
+};
 
 interface PasswordSetupModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { workId: string; email: string; password: string }) => void;
+  onSubmit: (data: { password: string }) => void;
 }
 
 export function PasswordSetupModal({
@@ -28,16 +31,38 @@ export function PasswordSetupModal({
     formState: { errors, isValid },
     watch,
   } = useForm<FormData>({
-    resolver: zodResolver(passwordSetupSchema),
+    resolver: zodResolver(
+      z
+        .object({
+          password: passwordSchema,
+          confirmPassword: z.string(),
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+          message: "Passwords do not match",
+          path: ["confirmPassword"],
+        })
+    ),
     mode: "onChange",
   });
 
-  const handleFormSubmit = (data: FormData) => {
-    onSubmit({
-      workId: data.workId,
-      email: data.email,
-      password: data.password,
-    });
+  const handleFormSubmit = async (data: FormData) => {
+    try {
+      const response = await fetch("/api/user-profile/password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password: data.password }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to set password");
+      }
+
+      onSubmit({ password: data.password });
+    } catch (error) {
+      console.error("Error setting password:", error);
+    }
   };
 
   if (!isOpen) return null;
@@ -53,7 +78,7 @@ export function PasswordSetupModal({
       {/* Modal */}
       <div className="relative bg-white rounded-lg w-full max-w-md mx-4 p-6">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold">Fill the form</h3>
+          <h3 className="text-lg font-semibold">Set Password</h3>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -63,34 +88,6 @@ export function PasswordSetupModal({
         </div>
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-          <div>
-            <Input
-              type="text"
-              placeholder="Work ID"
-              {...register("workId")}
-              className={`w-full ${errors.workId ? "border-red-500" : ""}`}
-            />
-            {errors.workId && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.workId.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <Input
-              type="email"
-              placeholder="Email"
-              {...register("email")}
-              className={`w-full ${errors.email ? "border-red-500" : ""}`}
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
-
           <div>
             <Input
               type="password"
@@ -128,7 +125,7 @@ export function PasswordSetupModal({
             } text-white py-2 rounded transition-colors`}
             disabled={!isValid}
           >
-            Use password
+            Set Password
           </Button>
         </form>
       </div>

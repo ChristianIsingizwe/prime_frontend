@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "../../lib/utils";
 
 interface CardProps {
@@ -9,7 +7,12 @@ interface CardProps {
 
 export function Card({ children, className }: CardProps) {
   return (
-    <div className={cn("bg-white rounded-lg shadow p-6", className)}>
+    <div
+      className={cn(
+        "rounded-lg border border-gray-200 bg-white shadow-sm",
+        className
+      )}
+    >
       {children}
     </div>
   );
@@ -21,7 +24,13 @@ interface CardHeaderProps {
 }
 
 export function CardHeader({ children, className }: CardHeaderProps) {
-  return <div className={cn("mb-4", className)}>{children}</div>;
+  return (
+    <div
+      className={cn("border-b border-gray-200 px-4 py-5 sm:px-6", className)}
+    >
+      {children}
+    </div>
+  );
 }
 
 interface CardTitleProps {
@@ -48,7 +57,7 @@ interface CardContentProps {
 }
 
 export function CardContent({ children, className }: CardContentProps) {
-  return <div className={cn("", className)}>{children}</div>;
+  return <div className={cn("p-4 sm:p-6", className)}>{children}</div>;
 }
 
 interface CardFooterProps {
@@ -58,7 +67,9 @@ interface CardFooterProps {
 
 export function CardFooter({ children, className }: CardFooterProps) {
   return (
-    <div className={cn("mt-4 pt-4 border-t flex items-center", className)}>
+    <div
+      className={cn("border-t border-gray-200 px-4 py-5 sm:px-6", className)}
+    >
       {children}
     </div>
   );

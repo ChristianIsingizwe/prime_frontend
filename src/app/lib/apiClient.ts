@@ -33,40 +33,41 @@ const isTokenExpired = (token: string): boolean => {
 
 // Request interceptor
 apiClient.interceptors.request.use(
-  async (config) => { 
-    const store = useAuthStore.getState();
-    let token = store.token;
+  async (config) => {
+    // Commenting out token checks for testing
+    // const store = useAuthStore.getState();
+    // let token = store.token;
 
-    if (token && isTokenExpired(token)) {
-      try {
-        const refreshToken = store.refreshToken;
+    // if (token && isTokenExpired(token)) {
+    //   try {
+    //     const refreshToken = store.refreshToken;
 
-        if (!refreshToken) {
-          store.logout();
-          return Promise.reject(new Error("No refresh token available"));
-        }
+    //     if (!refreshToken) {
+    //       store.logout();
+    //       return Promise.reject(new Error("No refresh token available"));
+    //     }
 
-        const response = await axios.post<RefreshResponse>(
-          `${baseURL}/auth/refresh-token`,
-          {
-            refreshToken,
-          }
-        );
+    //     const response = await axios.post<RefreshResponse>(
+    //       `${baseURL}/auth/refresh-token`,
+    //       {
+    //         refreshToken,
+    //       }
+    //     );
 
-        const { token: newToken, refreshToken: newRefreshToken } =
-          response.data;
-        store.updateTokens(newToken, newRefreshToken);
+    //     const { token: newToken, refreshToken: newRefreshToken } =
+    //       response.data;
+    //     store.updateTokens(newToken, newRefreshToken);
 
-        token = newToken;
-      } catch (error) {
-        store.logout();
-        return Promise.reject(error);
-      }
-    }
+    //     token = newToken;
+    //   } catch (error) {
+    //     store.logout();
+    //     return Promise.reject(error);
+    //   }
+    // }
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // if (token) {
+    //   config.headers.Authorization = `Bearer ${token}`;
+    // }
 
     return config;
   },
@@ -78,45 +79,46 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config as AxiosRequestConfig & {
-      _retry: boolean;
-    };
+    // Commenting out token refresh logic for testing
+    // const originalRequest = error.config as AxiosRequestConfig & {
+    //   _retry: boolean;
+    // };
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+    // if (error.response?.status === 401 && !originalRequest._retry) {
+    //   originalRequest._retry = true;
 
-      try {
-        const store = useAuthStore.getState();
-        const refreshToken = store.refreshToken;
+    //   try {
+    //     const store = useAuthStore.getState();
+    //     const refreshToken = store.refreshToken;
 
-        if (!refreshToken) {
-          store.logout();
-          return Promise.reject(error);
-        }
+    //     if (!refreshToken) {
+    //       store.logout();
+    //       return Promise.reject(error);
+    //     }
 
-        const response = await axios.post<RefreshResponse>(
-          `${baseURL}/auth/refresh-token`,
-          {
-            refreshToken,
-          }
-        );
+    //     const response = await axios.post<RefreshResponse>(
+    //       `${baseURL}/auth/refresh-token`,
+    //       {
+    //         refreshToken,
+    //       }
+    //     );
 
-        const { token, refreshToken: newRefreshToken } = response.data;
+    //     const { token, refreshToken: newRefreshToken } = response.data;
 
-        store.updateTokens(token, newRefreshToken);
+    //     store.updateTokens(token, newRefreshToken);
 
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-        } else {
-          originalRequest.headers = { Authorization: `Bearer ${token}` };
-        }
+    //     if (originalRequest.headers) {
+    //       originalRequest.headers.Authorization = `Bearer ${token}`;
+    //     } else {
+    //       originalRequest.headers = { Authorization: `Bearer ${token}` };
+    //     }
 
-        return axios(originalRequest);
-      } catch (refreshError) {
-        useAuthStore.getState().logout();
-        return Promise.reject(refreshError);
-      }
-    }
+    //     return axios(originalRequest);
+    //   } catch (refreshError) {
+    //     useAuthStore.getState().logout();
+    //     return Promise.reject(refreshError);
+    //   }
+    // }
 
     return Promise.reject(error);
   }

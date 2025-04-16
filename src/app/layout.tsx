@@ -5,6 +5,11 @@ import AuthGate from "./components/AuthGate";
 
 const inter = Inter({ subsets: ["latin"] });
 
+export const metadata = {
+  title: "Prime Insurance",
+  description: "Prime Insurance Management System",
+};
+
 export default function RootLayout({
   children,
 }: {

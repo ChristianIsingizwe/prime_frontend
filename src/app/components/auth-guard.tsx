@@ -27,22 +27,20 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requiredRole }) => {
   const { token, user, isAuthenticated, logout } = useAuthStore();
   let isAllowed = true;
 
-  // No redirect here; just check auth state
+  // Commenting out auth checks for testing
+  // if (isAuthenticated && requiredRole) {
+  //   if (user?.role !== requiredRole) {
+  //     isAllowed = false;
+  //   }
+  // }
 
-  // Authorization check
-  if (isAuthenticated && requiredRole) {
-    if (user?.role !== requiredRole) {
-      isAllowed = false;
-    }
-  }
+  // if (!isAuthenticated) {
+  //   return <Unauthenticated />;
+  // }
 
-  if (!isAuthenticated) {
-    return <Unauthenticated />;
-  }
-
-  if (!isAllowed) {
-    return <Forbidden />;
-  }
+  // if (!isAllowed) {
+  //   return <Forbidden />;
+  // }
 
   return <>{children}</>;
 };

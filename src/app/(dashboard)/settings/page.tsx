@@ -18,11 +18,7 @@ export default function SettingsPage() {
   const { uploadProfilePicture, isUploading } = useProfileUpload();
   const { profileData, isLoading } = useProfileData();
 
-  const handlePasswordSubmit = (data: {
-    workId: string;
-    email: string;
-    password: string;
-  }) => {
+  const handlePasswordSubmit = (data: { password: string }) => {
     // Handle password setup logic here
     console.log("Password setup data:", data);
     setIsPasswordModalOpen(false);
