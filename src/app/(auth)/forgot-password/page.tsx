@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
         email: data.email,
         workId: data.workId,
       });
-      toast.success("If the account exists, a reset link has been sent.");
+      toast.success("If the account exists, the admin will reset your password soon.");
       reset();
     } catch (error: any) {
       const msg =
@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left side - Form */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8">
+      <div className="w-full lg:w-3/5 flex flex-col justify-center items-center p-8">
         <div className="w-full max-w-md">
           <div className="mb-8">
             <Image
@@ -104,7 +104,7 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* Right side - Image */}
-      <div className="hidden lg:block lg:w-1/2">
+      <div className="hidden lg:block lg:w-2/5">
         <div className="h-full w-full relative">
           <Image
             src="/loginImage.png"

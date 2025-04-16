@@ -19,7 +19,6 @@ export function Grid({
   lgCols,
   gap = "md",
 }: GridProps) {
-  // Map cols to Tailwind classes
   const colsMap = {
     1: "grid-cols-1",
     2: "grid-cols-2",
@@ -35,7 +34,6 @@ export function Grid({
     12: "grid-cols-12",
   };
 
-  // Map md cols to Tailwind classes
   const mdColsMap = {
     1: "md:grid-cols-1",
     2: "md:grid-cols-2",
@@ -51,7 +49,6 @@ export function Grid({
     12: "md:grid-cols-12",
   };
 
-  // Map lg cols to Tailwind classes
   const lgColsMap = {
     1: "lg:grid-cols-1",
     2: "lg:grid-cols-2",
@@ -67,7 +64,6 @@ export function Grid({
     12: "lg:grid-cols-12",
   };
 
-  // Map gap to Tailwind classes
   const gapMap = {
     none: "gap-0",
     sm: "gap-2",
@@ -107,7 +103,6 @@ export function GridItem({
   mdColSpan,
   lgColSpan,
 }: GridItemProps) {
-  // Map colSpan to Tailwind classes
   const colSpanMap = {
     1: "col-span-1",
     2: "col-span-2",
@@ -124,7 +119,6 @@ export function GridItem({
     full: "col-span-full",
   };
 
-  // Map md colSpan to Tailwind classes
   const mdColSpanMap = {
     1: "md:col-span-1",
     2: "md:col-span-2",
@@ -141,7 +135,6 @@ export function GridItem({
     full: "md:col-span-full",
   };
 
-  // Map lg colSpan to Tailwind classes
   const lgColSpanMap = {
     1: "lg:col-span-1",
     2: "lg:col-span-2",

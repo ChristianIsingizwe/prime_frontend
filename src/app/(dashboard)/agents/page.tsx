@@ -40,7 +40,6 @@ export default function AgentsPage() {
     queryFn: getAgents,
   });
 
-  // Update store when data is fetched
   React.useEffect(() => {
     if (agents.length > 0) {
       setAgents(agents);

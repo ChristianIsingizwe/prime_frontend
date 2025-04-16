@@ -22,8 +22,8 @@ export function DeleteConfirmationModal({
 
   return (
     <>
-      <div className="fixed inset-0 bg-white/50 backdrop-blur-[2px] transition-all duration-200" />
-      <div className="fixed inset-0 flex items-center justify-center">
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-[2px] transition-all duration-200" />
+      <div className="fixed inset-0 flex items-center justify-center z-50">
         <div className="relative bg-white rounded-lg w-full max-w-md mx-4 p-6 shadow-xl">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-medium">{title}</h3>

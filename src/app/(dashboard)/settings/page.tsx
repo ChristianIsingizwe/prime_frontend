@@ -86,7 +86,6 @@ export default function SettingsPage() {
         />
 
         <div className="max-w-4xl mx-auto p-6">
-          {/* User Profile Section */}
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-6">User Profile</h2>
             <div className="flex flex-col md:flex-row items-start gap-6">
@@ -137,7 +136,6 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Personal Information Section */}
           <div>
             <h2 className="text-xl font-semibold mb-6">Personal Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
@@ -210,7 +208,6 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Password Section */}
           <div className="mt-8">
             <h2 className="text-xl font-semibold mb-6">
               Want to use a password?

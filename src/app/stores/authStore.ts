@@ -1,4 +1,3 @@
-// stores/authStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -58,7 +57,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: "auth-storage", // name of the item in the storage
+      name: "auth-storage",
       partialize: (state) => ({
         token: state.token,
         refreshToken: state.refreshToken,

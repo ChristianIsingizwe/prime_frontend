@@ -40,7 +40,7 @@ const AgentDetailsModal: React.FC<AgentDetailsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-opacity-30 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/30 backdrop-blur-[2px] flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
       <div

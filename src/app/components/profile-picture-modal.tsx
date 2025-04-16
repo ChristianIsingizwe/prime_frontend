@@ -36,7 +36,7 @@ const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 backdrop-blur-[2px] flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/30 backdrop-blur-[2px] flex items-center justify-center z-50 p-4"
       onClick={handleBackdropClick}
     >
       <div

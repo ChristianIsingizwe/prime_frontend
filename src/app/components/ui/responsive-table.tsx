@@ -53,16 +53,13 @@ export function ResponsiveTable<T>({
   const startIndex = (currentPage - 1) * rowsPerPage;
   const paginatedData = data.slice(startIndex, startIndex + rowsPerPage);
 
-  // Only show non-mobile hidden columns in the desktop view
   const visibleDesktopColumns = columns.filter((col) => !col.hideOnMobile);
-  // For mobile view, get a few essential columns
   const visibleMobileColumns = columns
     .filter((col) => !col.hideOnMobile)
     .slice(0, 2);
 
   return (
     <div className={cn("", className)}>
-      {/* Desktop table view */}
       <div className="hidden sm:block overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
@@ -94,7 +91,6 @@ export function ResponsiveTable<T>({
           </thead>
           <tbody>
             {paginatedData.map((row, index) => {
-              // Use the row id or index as key
               const rowId = (row as any)[uniqueKey] || index;
               return (
                 <tr
@@ -133,7 +129,6 @@ export function ResponsiveTable<T>({
         </table>
       </div>
 
-      {/* Mobile cards view */}
       <div className="sm:hidden">
         {paginatedData.map((row, index) => {
           const rowId = (row as any)[uniqueKey] || index;
@@ -180,7 +175,6 @@ export function ResponsiveTable<T>({
         })}
       </div>
 
-      {/* Pagination - works for both views */}
       <div className="flex flex-col sm:flex-row justify-between items-center mt-4 text-sm gap-4">
         {enableRowSelection && (
           <div>

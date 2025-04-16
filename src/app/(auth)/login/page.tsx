@@ -72,13 +72,13 @@ export default function LoginPage() {
         isAuthenticated: true,
         expiresIn,
       });
-      // Redirect based on role
+
       if (role === "admin") {
         router.push("/admin/managers");
       } else if (role === "manager") {
         router.push("/home");
       } else {
-        router.push("/");
+        router.push("/login");
       }
     } catch (error: any) {
       const msg = error?.response?.data?.message || "Login failed";
@@ -89,7 +89,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row overflow-hidden">
-      <div className="w-full md:w-3/5 p-4 sm:p-6 md:p-12 flex flex-col justify-center items-center">
+      <div className="w-full4 md:w-3/5 p-4 sm:p-6 md:p-12 flex flex-col justify-center items-center">
         <div className="mb-8 w-full max-w-md">
           <div className="mb-8 flex justify-center md:justify-start">
             <Image

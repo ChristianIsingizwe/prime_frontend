@@ -50,10 +50,8 @@ export function ManagerFormModal({
 
   return (
     <>
-      {/* Background overlay with reduced blur */}
-      <div className="fixed inset-0 bg-white/50 backdrop-blur-[2px] transition-all duration-200" />
+      <div className="fixed inset-0 bg-black/30 backdrop-blur-[2px] transition-all duration-200" />
 
-      {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div
           ref={modalRef}

@@ -11,7 +11,6 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    // Allow /login and /forgot-password without authentication
     if (pathname === "/login" || pathname === "/forgot-password") {
       setAuthChecked(true);
       return;
