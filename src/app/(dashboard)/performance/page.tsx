@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { Search, Bell, BarChart2 } from "lucide-react";
-import { GenericTable, type Column } from "../../components/agents-table";
+import {
+  ResponsiveTable,
+  type Column,
+} from "../../components/ui/responsive-table";
 import { toast } from "react-hot-toast";
 import Image from "next/image";
 
@@ -152,15 +155,12 @@ export default function PerformancePage() {
         </div>
 
         <div className="bg-white rounded-md shadow">
-          <GenericTable
+          <ResponsiveTable
             data={paginatedAgents}
             columns={columns}
             enableRowSelection={true}
             defaultRowsPerPage={5}
-            currentPage={currentPage}
-            totalPages={Math.ceil(filteredAgents.length / 5)}
-            onPageChange={setCurrentPage}
-            isLoading={isLoading}
+            uniqueKey="workId"
           />
         </div>
       </main>

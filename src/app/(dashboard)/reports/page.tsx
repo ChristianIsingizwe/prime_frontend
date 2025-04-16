@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { GenericTable, type Column } from "../../components/agents-table";
+import {
+  ResponsiveTable,
+  type Column,
+} from "../../components/ui/responsive-table";
 import { Document, Page, pdfjs } from "react-pdf";
 import { Search, Bell, FileText, FileArchive } from "lucide-react";
 import Image from "next/image";
@@ -193,40 +196,6 @@ export default function ReportsPage() {
             <FileText size={18} />
             <h1 className="text-lg font-bold">Reports</h1>
           </div>
-
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search"
-                className="pl-10 pr-4 py-2 rounded-full border border-gray-300 w-64"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <Search
-                className="absolute left-3 top-2.5 text-gray-400"
-                size={18}
-              />
-            </div>
-
-            <div className="relative">
-              <Bell size={20} />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                1
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Image
-                src="/placeholder.svg?height=40&width=40"
-                alt="Profile"
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
-              <span className="font-medium">Ange Kevine Uwayo</span>
-            </div>
-          </div>
         </header>
 
         <main className="p-6 transition-all duration-300">
@@ -246,11 +215,12 @@ export default function ReportsPage() {
             </div>
 
             <div className="bg-white rounded-md overflow-hidden">
-              <GenericTable
+              <ResponsiveTable
                 data={filteredData}
                 columns={columns}
                 enableRowSelection={true}
                 defaultRowsPerPage={5}
+                uniqueKey="id"
               />
             </div>
           </div>
@@ -259,11 +229,11 @@ export default function ReportsPage() {
 
       {/* PDF Modal - Changed this part */}
       {selectedPdf && (
-        <div 
+        <div
           className="fixed inset-0 flex items-center justify-center z-50"
           onClick={() => setSelectedPdf(null)}
         >
-          <div 
+          <div
             className="bg-white p-4 rounded-lg w-3/4 h-3/4 flex flex-col shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >

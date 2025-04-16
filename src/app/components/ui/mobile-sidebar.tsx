@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
@@ -24,6 +24,8 @@ interface MobileSidebarProps {
 export function MobileSidebar({ onLogout }: MobileSidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const mainContentRef = useRef<HTMLDivElement | null>(null);
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
@@ -46,6 +48,58 @@ export function MobileSidebar({ onLogout }: MobileSidebarProps) {
     );
   };
 
+  // Handle clicks outside the sidebar
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
+        closeSidebar();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  // Handle route changes
+  useEffect(() => {
+    closeSidebar();
+  }, [pathname]);
+
+  // Handle main content blur effect
+  useEffect(() => {
+    if (!mainContentRef.current) {
+      mainContentRef.current = document.querySelector("main");
+    }
+
+    if (mainContentRef.current) {
+      if (isOpen) {
+        mainContentRef.current.classList.add(
+          "blur-[2px]",
+          "opacity-60",
+          "transition-all",
+          "duration-300",
+          "pointer-events-none"
+        );
+      } else {
+        mainContentRef.current.classList.remove(
+          "blur-[2px]",
+          "opacity-60",
+          "transition-all",
+          "duration-300",
+          "pointer-events-none"
+        );
+      }
+    }
+  }, [isOpen]);
+
   return (
     <>
       <button
@@ -57,12 +111,13 @@ export function MobileSidebar({ onLogout }: MobileSidebarProps) {
 
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={toggleSidebar}
+          className="fixed inset-0 backdrop-blur-[2px] bg-black/30 z-40"
+          onClick={closeSidebar}
         />
       )}
 
       <aside
+        ref={sidebarRef}
         className={`fixed top-0 left-0 h-full w-64 bg-[#093753] text-white transform transition-transform duration-300 ease-in-out z-50 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
