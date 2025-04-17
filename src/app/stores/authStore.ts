@@ -1,16 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-interface User {
-  id: string; // Database-generated ID
-  workId: string; // User-provided work ID
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
-  name: string;
-}
-
+// Auth store interface defining the shape of our authentication state
 interface AuthState {
   token: string | null;
   refreshToken: string | null;
@@ -29,6 +20,20 @@ interface AuthState {
   hasRole: (role: string) => boolean;
 }
 
+// User interface defining the structure of user data
+// id: Database-generated unique identifier
+// workId: User-provided work identifier
+interface User {
+  id: string;
+  workId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  name: string;
+}
+
+// Create the auth store with initial state
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({

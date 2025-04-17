@@ -20,48 +20,45 @@ interface ProfileData {
   nationalId: string;
 }
 
-export function useProfileData() {
+// Custom hook for fetching and managing user profile data
+export const useProfileData = () => {
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
 
+  // Fetch profile data when component mounts or user changes
   useEffect(() => {
     const fetchProfileData = async () => {
+      // Check if user is authenticated
       if (!user?.id) {
-        toast.error("User not authenticated");
         setIsLoading(false);
         return;
       }
 
       try {
-        const response = await fetch(`/api/user-profile?userId=${user.id}`);
+        const response = await fetch(
+          `/api/user-profile/profile-data?userId=${user.id}`
+        );
+
         if (!response.ok) {
           throw new Error("Failed to fetch profile data");
         }
+
         const data = await response.json();
-        setProfileData({
-          id: data.id,
-          workId: data.workId,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          name: data.name,
-          email: data.email,
-          phoneNumber: data.phoneNumber,
-          role: data.role,
-          profileImageUrl: data.profileImageUrl,
-          region: data.region,
-          nationalId: data.nationalId,
-        });
+        setProfileData(data);
       } catch (error) {
         console.error("Error fetching profile data:", error);
-        toast.error("Failed to load profile information");
+        toast.error("Failed to fetch profile data");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchProfileData();
-  }, [user?.id]);
+  }, [user?.id]); // Refetch when user ID changes
 
-  return { profileData, isLoading };
-}
+  return {
+    profileData,
+    isLoading,
+  };
+};

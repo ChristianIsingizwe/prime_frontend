@@ -1,34 +1,28 @@
 import { useState } from "react";
-import { toast } from "react-hot-toast";
 import { useAuthStore } from "../stores/authStore";
+import toast from "react-hot-toast";
 
-export function useProfileUpload() {
+interface UseProfileUploadProps {
+  onSuccess?: () => void;
+}
+
+// Custom hook for handling profile picture uploads
+export const useProfileUpload = ({ onSuccess }: UseProfileUploadProps = {}) => {
   const [isUploading, setIsUploading] = useState(false);
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
 
+  // Function to upload a profile picture
   const uploadProfilePicture = async (file: File) => {
-    if (!file) return null;
+    // Check if user is authenticated
     if (!user?.id) {
-      toast.error("User not authenticated");
-      return null;
-    }
-
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
-      return null;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image size should be less than 5MB");
-      return null;
+      toast.error("You must be logged in to upload a profile picture");
+      return;
     }
 
     setIsUploading(true);
     const formData = new FormData();
-    formData.append("image", file);
-    formData.append("userId", user.id);
+    formData.append("file", file);
+    formData.append("userId", user.id); // Use database ID for user identification
 
     try {
       const response = await fetch("/api/user-profile/profile-image", {
@@ -37,20 +31,21 @@ export function useProfileUpload() {
       });
 
       if (!response.ok) {
-        throw new Error("Upload failed");
+        throw new Error("Failed to upload profile picture");
       }
 
-      const data = await response.json();
-      toast.success(data.message || "Profile picture updated successfully");
-      return data.imageUrl;
+      toast.success("Profile picture uploaded successfully");
+      onSuccess?.();
     } catch (error) {
-      console.error("Upload error:", error);
-      toast.error("Failed to upload profile picture. Please try again.");
-      return null;
+      console.error("Error uploading profile picture:", error);
+      toast.error("Failed to upload profile picture");
     } finally {
       setIsUploading(false);
     }
   };
 
-  return { uploadProfilePicture, isUploading };
-}
+  return {
+    isUploading,
+    uploadProfilePicture,
+  };
+};

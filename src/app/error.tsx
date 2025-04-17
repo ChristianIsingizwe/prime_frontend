@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
 import { Button } from "./components/ui/button";
 import { Container } from "./components/ui/container";
 
@@ -29,9 +28,6 @@ export default function Error({
           <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 justify-center">
             <Button variant="primary" onClick={reset}>
               Try again
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/home">Go back home</Link>
             </Button>
           </div>
         </div>

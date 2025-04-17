@@ -11,6 +11,7 @@ import apiClient from "../../lib/apiClient";
 import { useAuthStore } from "../../stores/authStore";
 import toast from "react-hot-toast";
 
+// Password validation schema requiring strong password criteria
 const strongPassword = z
   .string()
   .min(8, "Password must be at least 8 characters")
@@ -19,6 +20,7 @@ const strongPassword = z
   .regex(/[0-9]/, "Must contain a number")
   .regex(/[^A-Za-z0-9]/, "Must contain a special character");
 
+// Form validation schema using Zod
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   workId: z.string().nonempty("Work ID is required"),
@@ -37,6 +39,8 @@ export default function LoginPage() {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
   const [loginError, setLoginError] = useState<string | null>(null);
+
+  // Initialize form with validation
   const {
     register,
     handleSubmit,
@@ -46,14 +50,18 @@ export default function LoginPage() {
     mode: "onChange",
   });
 
+  // Handle form submission
   const onSubmit = async (data: FormData) => {
     setLoginError(null);
     try {
+      // Attempt login with provided credentials
       const response = await apiClient.post("/auth/login", {
         email: data.email,
         workId: data.workId,
         password: data.password || undefined,
       });
+
+      // Extract user data and tokens from response
       const {
         token,
         refreshToken,
@@ -66,6 +74,8 @@ export default function LoginPage() {
         name,
         id,
       } = response.data;
+
+      // Update auth store with user data and tokens
       setAuth({
         token,
         refreshToken,
@@ -74,6 +84,7 @@ export default function LoginPage() {
         expiresIn,
       });
 
+      // Redirect based on user role
       if (role === "admin") {
         router.push("/admin/managers");
       } else if (role === "manager") {
@@ -82,6 +93,7 @@ export default function LoginPage() {
         router.push("/login");
       }
     } catch (error: any) {
+      // Handle login errors
       const msg = error?.response?.data?.message || "Login failed";
       setLoginError(msg);
       toast.error(msg);
