@@ -4,44 +4,55 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "../stores/authStore";
 
-export default function AuthGate({ children }: { children: React.ReactNode }) {
+interface AuthGateProps {
+  children: React.ReactNode;
+}
+
+export function AuthGate({ children }: AuthGateProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { token, user, isAuthenticated, logout } = useAuthStore();
-  const [authChecked, setAuthChecked] = useState(false);
+  const { user, isAuthenticated, token, logout } = useAuthStore();
+  const [isChecking, setIsChecking] = useState(true);
 
-  // Commenting out auth redirects for testing
-  // useEffect(() => {
-  //   if (pathname === "/login" || pathname === "/forgot-password") {
-  //     setAuthChecked(true);
-  //     return;
-  //   }
-  //   if (!isAuthenticated) {
-  //     router.replace("/login");
-  //     setAuthChecked(false);
-  //   } else if (user?.role === "manager") {
-  //     router.replace("/home");
-  //     setAuthChecked(false);
-  //   } else if (user?.role === "admin") {
-  //     router.replace("/admin/managers");
-  //     setAuthChecked(false);
-  //   } else {
-  //     setAuthChecked(true);
-  //   }
-  // }, [isAuthenticated, user, router, pathname]);
-
-  // Always set authChecked to true to allow access to all pages
   useEffect(() => {
-    setAuthChecked(true);
-  }, []);
+    const isAuthPage =
+      pathname.startsWith("/login") || pathname.startsWith("/forgot-password");
+    const isPublicPage =
+      pathname === "/" || pathname === "/about" || pathname === "/contact";
 
-  if (
-    pathname !== "/login" &&
-    pathname !== "/forgot-password" &&
-    !authChecked
-  ) {
+    if (!isAuthenticated && !isAuthPage && !isPublicPage) {
+      router.replace("/login");
+      return;
+    }
+
+    if (isAuthenticated && isAuthPage) {
+      router.replace("/home");
+      return;
+    }
+
+    if (isAuthenticated && user) {
+      const isAdmin = user.role === "admin";
+      const isAgent = user.role === "agent";
+
+      if (pathname.startsWith("/admin") && !isAdmin) {
+        router.replace("/home");
+        return;
+      }
+
+      if (pathname.startsWith("/dashboard") && !isAgent) {
+        router.replace("/admin");
+        return;
+      }
+    }
+
+    setIsChecking(false);
+  }, [isAuthenticated, pathname, router, user]);
+
+  // Don't render anything while checking authentication
+  if (isChecking) {
     return null;
   }
 
+  // Only render children if all checks pass
   return <>{children}</>;
 }

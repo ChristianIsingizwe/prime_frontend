@@ -6,8 +6,7 @@ import {
   type Column,
 } from "../../components/ui/responsive-table";
 import { Document, Page, pdfjs } from "react-pdf";
-import { Search, Bell, FileText, FileArchive } from "lucide-react";
-import Image from "next/image";
+import {FileText, FileArchive } from "lucide-react";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 

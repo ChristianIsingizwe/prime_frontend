@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
+import { useAuthStore } from "../stores/authStore";
 
 export function useProfileUpload() {
   const [isUploading, setIsUploading] = useState(false);
+  const { user } = useAuthStore();
 
   const uploadProfilePicture = async (file: File) => {
     if (!file) return null;
+    if (!user?.id) {
+      toast.error("User not authenticated");
+      return null;
+    }
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
@@ -22,6 +28,7 @@ export function useProfileUpload() {
     setIsUploading(true);
     const formData = new FormData();
     formData.append("image", file);
+    formData.append("userId", user.id);
 
     try {
       const response = await fetch("/api/user-profile/profile-image", {

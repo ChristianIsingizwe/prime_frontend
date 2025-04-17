@@ -64,11 +64,12 @@ export default function LoginPage() {
         lastName,
         role,
         name,
+        id,
       } = response.data;
       setAuth({
         token,
         refreshToken,
-        user: { workId, email, firstName, lastName, role, name },
+        user: { id, workId, email, firstName, lastName, role, name },
         isAuthenticated: true,
         expiresIn,
       });
@@ -89,51 +90,53 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row overflow-hidden">
-      <div className="w-full4 md:w-3/5 p-4 sm:p-6 md:p-12 flex flex-col justify-center items-center">
-        <div className="mb-8 w-full max-w-md">
-          <div className="mb-8 flex justify-center md:justify-start">
+      <div className="w-full md:w-3/5 p-4 sm:p-6 md:p-8 flex flex-col justify-center items-center">
+        <div className="mb-4 w-full max-w-md">
+          <div className="mb-4 flex justify-center md:justify-start">
             <Image
               src="/logo.svg"
               alt="Prime insurance logo."
-              height={65}
-              width={170}
+              height={50}
+              width={130}
               priority
             />
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold mb-1 border-b pb-4 text-center md:text-left">
+          <h1 className="text-xl sm:text-2xl font-bold mb-1 border-b pb-2 text-center md:text-left">
             Welcome back!
           </h1>
 
-          <p className="text-gray-600 mt-4 sm:mt-6 mb-6 sm:mb-8 font-bold text-center md:text-left">
+          <p className="text-gray-600 mt-2 mb-4 text-sm font-bold text-center md:text-left">
             Log in to manage agents, track performance, and monitor attendance
             with real-time updates.
           </p>
         </div>
 
         <div className="w-full max-w-md">
-          <h2 className="text-xl sm:text-2xl font-bold mb-2">Login</h2>
-          <p className="text-gray-600 mb-6">Login to your account in seconds</p>
+          <h2 className="text-lg sm:text-xl font-bold mb-1">Login</h2>
+          <p className="text-gray-600 mb-4 text-sm">
+            Login to your account in seconds
+          </p>
 
           {loginError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded mb-3 text-sm">
               {loginError}
             </div>
           )}
 
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-5"
+            className="flex flex-col gap-3"
           >
             <div>
               <input
                 type="email"
                 placeholder="Email Address"
-                className="w-full p-3 border border-gray-300 rounded"
+                className="w-full p-3 border border-gray-300 rounded text-base"
                 {...register("email")}
               />
               {errors.email && (
-                <p className="text-red-500 text-sm mt-1">
+                <p className="text-red-500 text-xs mt-1">
                   {errors.email.message}
                 </p>
               )}
@@ -143,11 +146,11 @@ export default function LoginPage() {
               <input
                 type="text"
                 placeholder="Work ID"
-                className="w-full p-3 border border-gray-300 rounded"
+                className="w-full p-3 border border-gray-300 rounded text-base"
                 {...register("workId")}
               />
               {errors.workId && (
-                <p className="text-red-500 text-sm mt-1">
+                <p className="text-red-500 text-xs mt-1">
                   {errors.workId.message}
                 </p>
               )}
@@ -157,11 +160,11 @@ export default function LoginPage() {
               <input
                 type="password"
                 placeholder="Password (optional)"
-                className="w-full p-3 border border-gray-300 rounded"
+                className="w-full p-3 border border-gray-300 rounded text-base"
                 {...register("password")}
               />
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1">
+                <p className="text-red-500 text-xs mt-1">
                   {errors.password.message}
                 </p>
               )}
@@ -169,7 +172,7 @@ export default function LoginPage() {
             <div className="text-right">
               <Link
                 href="/forgot-password"
-                className="text-[#093753] hover:text-[#0f2a43] text-sm font-medium"
+                className="text-[#093753] hover:text-[#0f2a43] text-xs font-medium"
               >
                 Forgot password?
               </Link>
@@ -177,7 +180,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={!isValid}
-              className={`w-full p-3 rounded transition-colors ${
+              className={`w-full p-2 rounded transition-colors text-sm ${
                 isValid
                   ? "bg-[#093753] text-white hover:bg-[#0a4366]"
                   : "bg-blue-200 text-blue-800"

@@ -2,7 +2,8 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface User {
-  workId: string;
+  id: string; // Database-generated ID
+  workId: string; // User-provided work ID
   email: string;
   firstName: string;
   lastName: string;

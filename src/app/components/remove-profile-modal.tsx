@@ -4,6 +4,7 @@ import React, { useRef, useEffect } from "react";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
 import { toast } from "react-hot-toast";
+import { useAuthStore } from "../stores/authStore";
 
 interface RemoveProfileModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export function RemoveProfileModal({
   onConfirm,
 }: RemoveProfileModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     if (isOpen) {
@@ -34,10 +36,18 @@ export function RemoveProfileModal({
   };
 
   const handleRemove = async () => {
+    if (!user?.id) {
+      toast.error("User not authenticated");
+      return;
+    }
+
     try {
-      const response = await fetch("/api/user-profile/profile-image", {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/user-profile/profile-image?userId=${user.id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to remove profile picture");
